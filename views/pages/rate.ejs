@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Rates</title>
+	<link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" />
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+	<script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+	<%- include ("../partials/nav.ejs") %>
+	<div class="container">
+		<div class="row">
+			<h2>Postage Rate</h2>
+			<p>
+			<% if(rate == '$0.00') { %>
+				<b>No Rate for your selection.</b>
+			<% } else { %>
+				<b>Rate:</b> <%= rate %>
+			<% } %>
+			</p>
+			<p><b>Mail Type:</b> <%= mailTypeTitle %></p>
+			<p><b>Weight</b> <%= weight %> oz.</p>
+		</div>
+	</div>
+</body>
+
+</html>

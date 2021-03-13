@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Postal Rate Calculator</title>
+	<link rel="stylesheet" type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" />
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+	<script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="/stylesheets/main.css" />
+</head>
+
+<body>
+	<nav class="navbar navbar-default navbar-static-top navbar-inverse">
+		<div class="container">
+			<ul class="nav navbar-nav">
+				<li>
+					<a href="/"><span class="glyphicon glyphicon-home"></span> Home</a>
+				</li>
+				<li class="active">
+					<a href="/form.html"><span class="glyphicon glyphicon-envelope"></span> Postal Rate Calculator</a>
+				</li>
+			</ul>
+			<ul class="nav navbar-nav navbar-right">
+				<li class="navbar-right">
+					<a href="https://secret-scrubland-75850.herokuapp.com/?action=assignments"><span
+							class="glyphicon glyphicon-book"></span> CSE 341 Assignments</a>
+				</li>
+			</ul>
+		</div>
+	</nav>
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-6">
+				<form action="/getRate" method="GET" id="form">
+					<div class="form-group">
+						<label for="mailType">Postage Type</label>
+						<select name="mailType" id="mailType" class="form-control">
+							<option selected>Choose...</option>
+							<option value="Letters_Stamped">Letters (Stamped)</option>
+							<option value="Letters_Metered">Letters (Metered)</option>
+							<option value="Large_Envelopes">Large Envelopes (Flats)</option>
+							<option value="Package">First-Class Package Service—Retail</option>
+						</select>
+					</div>
+					<div class="form-group">
+						<label for="weight">Postage weight (oz)</label>
+						<input type="text" class="form-control" name="weight" id="weight" required>
+					</div>
+					<button type="submit" class="btn btn-primary">Submit</button>
+				</form>
+			</div>
+			<div class="col-sm-6" id="json"></div>
+		</div>
+	</div>
+	<footor class="container">
+		<div class="text-center" role="alert">
+			Copyright © 2021 Kevin Nielsen - CSE 341
+		</div>
+	</footor>
+</body>
+
+</html>
