@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<%- include ("../partials/header.ejs") %>
+	<link rel="stylesheet" type="text/css" href="/stylesheets/calendar.css" />
+</head>
+
+<body onLoad="startCalendar();">
+
+	<%- include ("../partials/nav.ejs") %>
+
+
+<div class="container">
+	<div class="row">
+		<p><b>Milestone Notes:</b> Prototype API request page build to show holidays throughout the year. 
+			The Holiday API is coded in PHP to calculate the correct dates for a list of holidays and output them in a 
+			JSON document that can be requested and read by the AJAX script.</p>
+		<hr>
+		<h3>Holiday API</h3>
+		<p><form>
+			Select Month:
+			<select id='m'>
+				<option value=''>Whole Year</option>
+				<option value='1'>Janaury</option>
+				<option value='2'>February</option>
+				<option value='3'>March</option>
+				<option value='4'>April</option>
+				<option value='5'>May</option>
+				<option value='6'>June</option>
+				<option value='7'>July</option>
+				<option value='8'>August</option>
+				<option value='9'>September</option>
+				<option value='10'>October</option>
+				<option value='11'>November</option>
+				<option value='12'>December</option>
+			</select>
+			Year:
+			<input type="number" id="y" name="y" min="1970" max="2037" value="2021">
+			<button type="button" onclick="lookup();">Request</button>
+		</form></p>
+		<div id="display">Your request will display here...</div>
+	</div>
+</div>
+<script>
+function lookup() {
+	let month = parseInt(document.getElementById('m').value);
+	let year = parseInt(document.getElementById('y').value);
+	let qStr = '';
+	if(!isNaN(year) && year >= 1970 && year <= 2037) {
+		if(!isNaN(month) && month >= 1 && month <= 12) {
+			qStr = '/year/' + year + '/month/' + month;
+		} else {
+			qStr = '/year/' + year;
+		}
+	} else {
+		alert('Year is invalid!');
+		return;
+	}
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			let data = JSON.parse(this.responseText);
+			
+			let html = '<div>Holiday</div>';
+				html += '<div>Date</div>';
+				html += '<div>Day of Week</div>';
+				html += '<div>Timestamp</div>';
+		
+			for(let key in data) {
+				html += '<div>' + data[key].name + '</div>';
+				html += '<div>' + data[key].month + '/' + data[key].day + '/' + data[key].year + '</div>';
+				html += '<div>' + data[key].weekday + '</div>';
+				html += '<div>' + data[key].time + '</div>';
+			}		
+			document.getElementById("display").innerHTML = html;
+			
+		}
+	};
+	xmlhttp.open('GET', '/holidayAPI' + qStr , true);
+	xmlhttp.send();
+}
+</script>
+
+
+<div class="container" >
+	<div id="calendar">
+		<div id="monthHeader">
+			<h2>March 2021</h2>
+		</div>
+		<div class="grid">
+			<div id="Sunday" class="weekday" data-abbr="Sun">Sunday</div>
+			<div id="Monday" class="weekday" data-abbr="Mon">Monday</div>
+			<div id="Tuesday" class="weekday" data-abbr="Tues">Tuesday</div>
+			<div id="Wednesday" class="weekday" data-abbr="Wed">Wednesday</div>
+			<div id="Thursday" class="weekday" data-abbr="Thurs">Thursday</div>
+			<div id="Friday" class="weekday" data-abbr="Fri">Friday</div>
+			<div id="Saturday" class="weekday" data-abbr="Sat">Saturday</div>
+			<div class="offset"></div>
+			<div id="2021_03_01" class="day fadeIn"><label>1</label></div>
+			<div id="2021_03_02" class="day fadeIn"><label>2</label></div>
+			<div id="2021_03_03" class="day fadeIn"><label>3</label></div>
+			<div id="2021_03_04" class="day fadeIn"><label>4</label></div>
+			<div id="2021_03_05" class="day fadeIn"><label>5</label></div>
+			<div id="2021_03_06" class="day fadeIn"><label>6</label></div>
+			<div id="2021_03_07" class="day fadeIn"><label>7</label></div>
+			<div id="2021_03_08" class="day today fadeIn"><label>8</label></div>
+			<div id="2021_03_09" class="day fadeIn"><label>9</label></div>
+			<div id="2021_03_10" class="day fadeIn"><label>10</label></div>
+			<div id="2021_03_11" class="day fadeIn"><label>11</label></div>
+			<div id="2021_03_12" class="day fadeIn"><label>12</label></div>
+			<div id="2021_03_13" class="day fadeIn"><label>13</label></div>
+			<div id="2021_03_14" class="day fadeIn"><label>14</label></div>
+			<div id="2021_03_15" class="day fadeIn"><label>15</label></div>
+			<div id="2021_03_16" class="day fadeIn"><label>16</label></div>
+			<div id="2021_03_17" class="day fadeIn"><label>17</label>
+				<div id="h0" class="holiday">St. Patrick's Day</div>
+			</div>
+			<div id="2021_03_18" class="day fadeIn"><label>18</label></div>
+			<div id="2021_03_19" class="day fadeIn"><label>19</label></div>
+			<div id="2021_03_20" class="day fadeIn"><label>20</label></div>
+			<div id="2021_03_21" class="day fadeIn"><label>21</label></div>
+			<div id="2021_03_22" class="day fadeIn"><label>22</label></div>
+			<div id="2021_03_23" class="day fadeIn"><label>23</label></div>
+			<div id="2021_03_24" class="day fadeIn"><label>24</label></div>
+			<div id="2021_03_25" class="day fadeIn"><label>25</label></div>
+			<div id="2021_03_26" class="day fadeIn"><label>26</label></div>
+			<div id="2021_03_27" class="day fadeIn"><label>27</label></div>
+			<div id="2021_03_28" class="day fadeIn"><label>28</label></div>
+			<div id="2021_03_29" class="day fadeIn"><label>29</label></div>
+			<div id="2021_03_30" class="day fadeIn"><label>30</label></div>
+			<div id="2021_03_31" class="day fadeIn"><label>31</label></div>
+		</div>
+	</div>
+</div>
+
+
+	<%- include ("../partials/footer.ejs") %>
+
+</body>
+</html>

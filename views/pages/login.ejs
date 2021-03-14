@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<%- include ("../partials/header.ejs") %>
+	<title>Login Form</title>
+	<script src="/js/login.js"></script>
+</head>
+
+<body>
+
+	<%- include ("../partials/nav.ejs") %>
+
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-6">
+				<label for="username">Username</label>
+				<input type="text" id="username" placeholder="username" class="form-control"><br>
+				<label for="password">Password</label>
+				<input type="password" id="password" placeholder="password" class="form-control"><br>
+				<button class="btn btn-primary" onclick="login();">Log in</button>
+				<button class="btn btn-primary" onclick="logout();">Log out</button><br>
+				<br>
+				<p>Login test: username and password hard coded for testing for now.</p>
+				<button class="btn btn-primary" onclick="getServerTime()">Get server time</button>
+				<div id="status"></div>
+			</div>
+		</div>
+	</div>
+
+	<%- include ("../partials/footer.ejs") %>
+
+</body>
+</html>

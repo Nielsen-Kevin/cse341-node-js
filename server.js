@@ -1,20 +1,17 @@
-require('dotenv').config();
 const express = require('express')
 const path = require('path')
 const PORT = process.env.PORT || 5000
 
-const { Pool } = require('pg')
-const connectionString = process.env.DATABASE_URL;
-//const pool = new Pool({connectionString: connectionString});
-const pool = new Pool(
-	{connectionString: connectionString,
-	ssl: {
-		rejectUnauthorized: false
-	}
-});
+const https = require('https');
 
-//Rate calculator w09
-const rateCalculator = require('./rateCalculator');
+//TODO move to module to routes folder
+
+// Rate calculator w09
+const rateCalculator = require('./_rateCalculator');
+// Team w10
+const team09 = require('./_team09');
+// Account route ?
+const account = require('./_account');
 
 express()
 	.use(express.static(path.join(__dirname, 'public')))// Set safe folder for static files
@@ -23,111 +20,68 @@ express()
 	.get('/', (req, res) => res.render('pages/index'))
 	// Rate calculator w09
 	.get('/getRate', rateCalculator.getRate)
+
 	// Team w10
 	.get('/person', (req, res) => res.render('pages/person'))
-	.get('/getPeople', getPeople)
-	.get('/getPerson', getPerson)
-	.get('/getParent', getParent)
-	.get('/getChild', getChild)
+	.get('/getPeople', team09.getPeople)
+	.get('/getPerson', team09.getPerson)
+	.get('/getParent', team09.getParent)
+	.get('/getChild', team09.getChild)
+
+	// Login system
+	.use('/account', account)
+
+	//.get('/login', (req, res) => res.render('pages/login'))
+	//.post('/login', login)
+	//.delete('/logout', logout)
+	//.get('/register', (req, res) => res.render('pages/register'))
+	//.post('/register', register)
+
+	// Calendar
+	.get('/calendar', (req, res) => res.render('pages/calendar'))
+	.get('/holidayAPI/year/:year', holidayAPI)
+	.get('/holidayAPI/year/:year/month/:month', holidayAPI)
 
 	.listen(PORT, () => console.log(`Listening on ${ PORT }`));
 
-function getPeople(req, res){
-	var sql = "SELECT * FROM team10.person";
 
-	pool.query(sql, function(err, result) {
-		// If an error occurred...
-		if (err) {
-			console.log("Error in query: ")
-			console.log(err);
-		}
-		res.json(result.rows)
-	})
-}
+// Support Funtions
 
-function getPerson(req, res){
-	console.log("Getting persons....")
-	var id = [req.query.id];
+function holidayAPI(req, res){
+	year = req.params.year;
+	month = req.params.month;
 
-	const sql = "SELECT * FROM team10.person WHERE personid = $1::int";
-	pool.query(sql, id, function(err, result) {
-		// If an error occurred...
-		if (err) {
-			console.log("Error in query: ")
-			console.log(err);
-		}
-		res.json(JSON.stringify(result.rows))
-	})
-}
-/* function getPerson(req, res){
-	console.log("Getting persons....")
-	const id = req.query.id;
-	console.log('id: ', id);
+	if(!isNaN(month) && month >= 1 && month <= 12) {
+		qStr = '?y=' + year + '&m=' + month;
+	} else {
+		qStr = '?y=' + year;
+	}
 
-	// TODO: We should really check here for a valid id before continuing on...
+	let url = 'https://secret-scrubland-75850.herokuapp.com/holidayAPI/index.php' + qStr;
 
-	getPersonFromDb(id, function(error, result) {
-		// This is the callback function that will be called when the DB is done.
-		// The job here is just to send it back.
+	https.get(url, (response) => {
+		let body = '',
+			json_data;
 
-		// Make sure we got a row with the person, then prepare JSON to send back
-		if (error || result == null || result.length != 1) {
-			response.status(500).json({success: false, data: error});
-		} else {
-			const person = result[0];
-			response.status(200).json(JSON.stringify(person));
-		}
+		response.on('data', (stream) => {
+			body += stream;
+		});
+
+		response.on('end', () => {
+			if (response.statusCode === 200) {
+				try {
+					var data = JSON.parse(body);
+					// do something with JSON
+					res.json(data);
+				} catch (e) {
+					console.log('Error parsing JSON!');
+				}
+			} else {
+				console.log('Status:', response.statusCode);
+			}
+		});
+
+	}).on('error', (err) => {
+		console.log(err);
 	});
-}
-function getPersonFromDb(id, callback) {
-	console.log("Getting person from DB with id: " + id);
-
-	const sql = "SELECT * FROM team10.person WHERE personid = $1::int";
-	const params = [id];
-
-	pool.query(sql, params, function(err, result) {
-		// If an error occurred...
-		if (err) {
-			console.log("Error in query: ")
-			console.log(err);
-			callback(err, null);
-		}
-
-		// Log this to the console for debugging purposes.
-		console.log("Found result: " + JSON.stringify(result.rows));
-
-		// (The first parameter is the error variable, so we will pass null.)
-		callback(null, result.rows);
-	});
-} */
-
-
-function getParent(req, res){
-	console.log("Getting parent....")
-	var id = [req.query.id];
-
-	const sql = "SELECT parent FROM team10.relationship WHERE child = $1::int";
-	pool.query(sql, id, function(err, result) {
-		// If an error occurred...
-		if (err) {
-			console.log("Error in query: ")
-			console.log(err);
-		}
-		res.json(JSON.stringify(result.rows))
-	})
-}
-
-function getChild(req, res){
-	console.log("Getting child....")
-	var id = [req.query.id];
-
-	const sql = "SELECT child FROM team10.relationship WHERE parent = $1::int";
-	pool.query(sql, id, function(err, result) {
-		// If an error occurred...
-		if (err || result == null) {
-			console.log("Error in query: ")
-			console.log(err);
-		}
-		res.json(JSON.stringify(result.rows))
-	})
 }

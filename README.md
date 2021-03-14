@@ -11,6 +11,8 @@ npm install dotenv --save
 
 npm install pg --save
 
+npm install express-session --save
+
 heroku create
 
 heroku addons:create heroku-postgresql:hobby-dev
@@ -31,10 +33,10 @@ git push heroku main
 git push github main
 
 # Files Created
-server.js
-README.md
-.env
-.gitignore
+server.js, 
+README.md, 
+.env, 
+.gitignore, 
 Procfile
 
 # Checks
