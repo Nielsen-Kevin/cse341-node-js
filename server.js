@@ -4,20 +4,21 @@ const PORT = process.env.PORT || 5000
 
 const https = require('https');
 
-//TODO move to module to routes folder
-
 // Rate calculator w09
-const rateCalculator = require('./_rateCalculator');
+const rateCalculator = require('./routes/rateCalculator');
 // Team w10
-const team09 = require('./_team09');
-// Account route ?
-const account = require('./_account');
+const team09 = require('./routes/team09');
+// Account routes
+const account = require('./routes/account');
+// Events routes
+const events = require('./routes/events');
 
 express()
 	.use(express.static(path.join(__dirname, 'public')))// Set safe folder for static files
 	.set('views', path.join(__dirname, 'views'))// Set views to path
 	.set('view engine', 'ejs')// Set the view engine to ejs
 	.get('/', (req, res) => res.render('pages/index'))
+
 	// Rate calculator w09
 	.get('/getRate', rateCalculator.getRate)
 
@@ -31,16 +32,13 @@ express()
 	// Login system
 	.use('/account', account)
 
-	//.get('/login', (req, res) => res.render('pages/login'))
-	//.post('/login', login)
-	//.delete('/logout', logout)
-	//.get('/register', (req, res) => res.render('pages/register'))
-	//.post('/register', register)
-
 	// Calendar
 	.get('/calendar', (req, res) => res.render('pages/calendar'))
 	.get('/holidayAPI/year/:year', holidayAPI)
 	.get('/holidayAPI/year/:year/month/:month', holidayAPI)
+
+	//Event CRUD
+	.use('/event', events)
 
 	.listen(PORT, () => console.log(`Listening on ${ PORT }`));
 

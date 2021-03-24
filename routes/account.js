@@ -1,10 +1,10 @@
 if (process.env.NODE_ENV !== 'production') {
-	require('dotenv').config()
+	require('dotenv').config();
 }
 
-const express = require('express')
+const express = require('express');
 const router = express.Router();
-var session = require('express-session')
+var session = require('express-session');
 
 // set up sessions
 router.use(session({
@@ -19,7 +19,7 @@ router.use(express.urlencoded({ extended: true })); // to support URL-encoded bo
 router.use(logRequest);
 
 // Setup our routes
-router.get('/login', (req, res) => res.render('pages/login'))
+router.get('/login', (req, res) => res.render('pages/login'));
 router.post('/login', handleLogin);
 router.post('/logout', handleLogout);
 router.get('/getServerTime', verifyLogin, getServerTime);
