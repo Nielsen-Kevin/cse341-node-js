@@ -51,7 +51,7 @@ router.get('/:year/:month', function(req, res) {
 router.post('/', function(req, res) {
 	console.log("Saving event....")
 
-	const sql = 'INSERT INTO project02.event(event_date, event_date, event_color) VALUES($1, $2, $3) returning event_id';
+	const sql = 'INSERT INTO project02.event(event_name, event_date, event_color) VALUES($1, $2, $3) returning event_id';
 	const params = [req.body.name, req.body.date, req.body.color];
 	console.log(params);
 
@@ -86,7 +86,7 @@ router.get('/:id', function(req, res) {
 // update event
 router.put('/:id', function(req, res) {
 	console.log("Updating event....")
-	const sql = 'UPDATE project02.event SET event_date = $2, event_date = $3, event_color = $4  WHERE event_id = $1::int';
+	const sql = 'UPDATE project02.event SET event_name = $2, event_date = $3, event_color = $4  WHERE event_id = $1::int';
 	var params = [req.params.id, req.body.name, req.body.date, req.body.color];
 	
 	pool.query(sql, id, function(err, result) {
