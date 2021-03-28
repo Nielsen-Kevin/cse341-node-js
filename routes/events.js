@@ -35,7 +35,7 @@ router.get('/:year/:month', function(req, res) {
 	month = req.params.month;
 
 	//const sql = "SELECT * FROM project02.event WHERE YEAR(event_date) = $1 AND MONTH(event_date) = $2";
-	const sql = "SELECT * FROM project02.event WHERE date_part('year', event_date) = $1 AND date_part('month', event_date) = $2";
+	const sql = "SELECT event_id AS id, event_name AS name, date_part('day', event_date) AS day, event_color AS color FROM project02.event WHERE date_part('year', event_date) = $1 AND date_part('month', event_date) = $2";
 	const params = [year, month];
 
 	pool.query(sql, params, function(err, result) {
@@ -43,7 +43,7 @@ router.get('/:year/:month', function(req, res) {
 		if (err) {
 			return console.error('error running query', err);
 		}
-		res.json(JSON.stringify(result.rows))
+		res.json(result.rows)
 	})
 });
 

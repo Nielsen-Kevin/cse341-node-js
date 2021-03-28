@@ -437,7 +437,7 @@ function startCalendar() {
 				console.log(events);
 
 				for(let key in events) {
-					id = NewEvent(events[key].name, parseInt(events[key].month, 10), parseInt(events[key].day, 10), events[key].year);
+					id = NewEvent(events[key].name, numMonth, parseInt(events[key].day, 10), numYear);
 					mSchedule[id].updateDay();
 					mSchedule[id].recordId = events[key].id;
 				}
