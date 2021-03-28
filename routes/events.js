@@ -35,7 +35,7 @@ router.get('/:year/:month', function(req, res) {
 	month = req.params.month;
 
 	//const sql = "SELECT * FROM project02.event WHERE YEAR(event_date) = $1 AND MONTH(event_date) = $2";
-	const sql = "SELECT * FROM project02.event WHERE date_part('year', TIMESTAMP event_date) = $1 AND date_part('month', TIMESTAMP event_date) = $2";
+	const sql = "SELECT * FROM project02.event WHERE date_part('year', event_date) = $1 AND date_part('month', event_date) = $2";
 	const params = [year, month];
 
 	pool.query(sql, params, function(err, result) {
