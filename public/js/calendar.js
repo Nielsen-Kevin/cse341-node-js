@@ -433,11 +433,10 @@ function startCalendar() {
 			if (this.readyState == 4 && this.status == 200) {
 				endLoading();
 				
-				//let events = JSON.parse(this.responseText);
-				let events = this.responseText;
+				let events = JSON.parse(this.responseText);
 				console.log(events);
 
-				for(let key in events) {
+				for(let key in events[0]) {
 					id = NewEvent(events[key].name, numMonth, parseInt(events[key].day, 10), numYear, events[key].time, events[key].color);
 					mSchedule[id].updateDay();
 					mSchedule[id].recordId = events[key].id;
