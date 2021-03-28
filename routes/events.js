@@ -92,7 +92,7 @@ router.get('/:id', function(req, res) {
 // update event
 router.put('/:id', function(req, res) {
 	console.log("Updating event....")
-	const sql = 'UPDATE project02.event SET event_name = $2, event_date = $3, event_color = $4  WHERE event_id = $1::int';
+	const sql = 'UPDATE project02.event SET event_name = $2, event_date = $3, event_color = $4 WHERE event_id = $1::int';
 	var params = [req.params.id, req.body.name, req.body.date, req.body.color];
 	
 	pool.query(sql, params, function(err, result) {
@@ -100,7 +100,7 @@ router.put('/:id', function(req, res) {
 		if (err) {
 			return console.error('error running query', err);
 		}
-		res.json(JSON.stringify(result.rows))
+		res.json({'success': true})
 	})
 });
 //delete one event
