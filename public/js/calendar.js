@@ -436,7 +436,7 @@ function startCalendar() {
 				let events = JSON.parse(this.responseText);
 				console.log(events);
 
-				for(let key in events[0]) {
+				for(let key in events) {
 					id = NewEvent(events[key].name, numMonth, parseInt(events[key].day, 10), numYear, events[key].time, events[key].color);
 					mSchedule[id].updateDay();
 					mSchedule[id].recordId = events[key].id;
