@@ -433,7 +433,8 @@ function startCalendar() {
 			if (this.readyState == 4 && this.status == 200) {
 				endLoading();
 				
-				let events = JSON.parse(this.responseText);
+				//let events = JSON.parse(this.responseText);
+				let events = this.responseText;
 				console.log(events);
 
 				for(let key in events) {
