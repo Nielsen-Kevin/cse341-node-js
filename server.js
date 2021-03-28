@@ -3,6 +3,7 @@ const path = require('path')
 const PORT = process.env.PORT || 5000
 
 const https = require('https');
+var session = require('express-session');
 
 // Rate calculator w09
 const rateCalculator = require('./routes/rateCalculator');
@@ -14,9 +15,20 @@ const account = require('./routes/account');
 const events = require('./routes/events');
 
 express()
+	.use(express.json()) // to support JSON-encoded bodies
+	.use(express.urlencoded({ extended: true })) // to support URL-encoded bodies
 	.use(express.static(path.join(__dirname, 'public')))// Set safe folder for static files
 	.set('views', path.join(__dirname, 'views'))// Set views to path
 	.set('view engine', 'ejs')// Set the view engine to ejs
+
+	// set up sessions
+	.use(session({
+		secret: 'my-super-secret-secret!',//Need to change and move to env
+		resave: false,
+		saveUninitialized: true
+	}))
+
+	// Home Page
 	.get('/', (req, res) => res.render('pages/index'))
 
 	// Rate calculator w09
@@ -40,10 +52,30 @@ express()
 	//Event CRUD
 	.use('/event', events)
 
+	// Testing
+	.post('/tp', testPOST)
+	.get('/ts', testSession)
+
 	.listen(PORT, () => console.log(`Listening on ${ PORT }`));
 
+	// Support Funtions
 
-// Support Funtions
+function testSession(req, res) {
+	if (req.session.user) {
+		console.log(req.session.user);
+		var result = {success:true, message: "They are logged in!"};
+		res.json(result);
+	} else {
+		var result = {success:false, message: "Access Denied"};
+		res.status(401).json(result);
+	}
+}
+
+function testPOST(req, res){
+	console.log("Testing post....")
+	console.log(req.body);
+	res.json(JSON.stringify(req.body))
+}
 
 function holidayAPI(req, res){
 	year = req.params.year;

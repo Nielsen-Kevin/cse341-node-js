@@ -91,6 +91,7 @@ function startCalendar() {
 		this.month = month;
 		this.year = year;
 		this.time = time;
+		this.recordId;
 		// Methods
 		this.id = function() {
 			return this.year + '_' + ('0' + this.month).slice(-2) + '_' + ('0' + this.day).slice(-2);
@@ -136,7 +137,7 @@ function startCalendar() {
 			}
 			autoIncrement();
 			// Auto save
-			saveRecord('e' + year + ('0' + month).slice(-2), key, record);
+			saveRecord('e' + year + ('0' + month).slice(-2), key);
 		}
 	}
 
@@ -151,7 +152,7 @@ function startCalendar() {
 			obj.parentNode.removeChild(obj);
 		}
 		// Auto save
-		saveRecord('e' + year + ('0' + month).slice(-2), key, record) ;
+		updateRecord('e' + year + ('0' + month).slice(-2), key);
 	}
 
 	// My Modal
@@ -400,8 +401,8 @@ function startCalendar() {
 	}
 
 	// Request Holidays from API for given month
-	var xmlhttp = new XMLHttpRequest();
-	xmlhttp.onreadystatechange = function() {
+	let xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function() {
 		if (this.readyState == 4 && this.status == 200) {
 			endLoading();
 			
@@ -415,42 +416,132 @@ function startCalendar() {
 			addLoading();
 		}
 	};
-	xmlhttp.open('GET', '/holidayAPI/year/' + numYear + '/month/' + numMonth, true);
-	xmlhttp.send();
+	xhttp.open('GET', '/holidayAPI/year/' + numYear + '/month/' + numMonth, true);
+	xhttp.send();
 
 	function autoIncrement() {
 		eventCount++;
 		console.log('eventCount', eventCount);
 	}
+	getMonthRecords();
 
 	// Retrieve list of events and parse them back into an array
-	function getMonthRecords(monthKey) {
-		//TODO: AJAX Get Month Records
+	function getMonthRecords() {
+		// AJAX Get Month Records
+		let xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				endLoading();
+				
+				let events = JSON.parse(this.responseText);
+				console.log(events);
+
+				for(let key in events) {
+					id = NewEvent(events[key].name, parseInt(events[key].month, 10), parseInt(events[key].day, 10), events[key].year);
+					mSchedule[id].updateDay();
+					mSchedule[id].recordId = events[key].id;
+				}
+			}
+			if (this.status == 500) {
+				endLoading();
+			}
+			if (this.readyState == 1) {
+				addLoading();
+			}
+		};
+		xhttp.open('GET', '/event/' + numYear + '/' + numMonth, true);
+		xhttp.send();
+	}
+
+	function setupParams(eventKey) {
+		let day = mSchedule[eventKey].day;
+		let month = mSchedule[eventKey].month;
+		let year = mSchedule[eventKey].year;
+		let time = (mSchedule[eventKey].time) ? mSchedule[eventKey].time : '00:00:00';
+
+		return params = {
+			name: mSchedule[eventKey].name,
+			date: `${year}-${month}-${day} ${time}`,
+			color: mSchedule[eventKey].color
+		}
 	}
 
 	// Save records every time there is a change
-	function saveRecord(monthKey, eventKey, eventData) {
+	function saveRecord(monthKey, eventKey) {
 		let currentDataKey = 'e' + numYear + ('0' + numMonth).slice(-2);
+		let params = setupParams(eventKey);
+
+		// AJAX SAVE
+		$.post("/event", params, function(result) {
+			if (result && result.success) {
+				// handle success
+				console.log(result);
+				mSchedule[eventKey].recordId = result.id;
+			} else {
+				// handle failure
+			}
+		});
+
 		if(currentDataKey != monthKey) {
 			// Moving to new month remove
 			if(mSchedule[eventKey]) {
 				delete mSchedule[eventKey];
 			}
 		}
-		//TODO: AJAX SAVE
+	}
 
-		// Save current month on every change - by default or with event moved to different month
-		console.log(currentDataKey, JSON.stringify(mSchedule));
+	// Update records every time there is a change
+	function updateRecord(monthKey, eventKey) {
+		let currentDataKey = 'e' + numYear + ('0' + numMonth).slice(-2);
+		let id = mSchedule[eventKey].recordId;
+		let params = setupParams(eventKey);
+
+		if(id) {
+			// AJAX UPDATE
+			$.ajax({
+				url: '/event/' + id,
+				method: 'PUT',
+				contentType: 'application/json',
+				data: params,
+				success: function(result) {
+					// handle success
+					console.log(result);
+				},
+				error: function(request,msg,error) {
+					// handle failure
+				}
+			});
+		}
+		
+		if(currentDataKey != monthKey) {
+			// Moving to new month remove
+			if(mSchedule[eventKey]) {
+				delete mSchedule[eventKey];
+			}
+		}
 	}
 
 	// Remove Event
 	function deleteEvent(eventKey) {
-		delete mSchedule[eventKey];
-		// Save current month after mSchedule remove event
-		let currentDataKey = 'e' + numYear + ('0' + numMonth).slice(-2);
+		let id = mSchedule[eventKey].recordId;
 
-		//TODO: AJAX DELETE
-		console.log(currentDataKey, JSON.stringify(mSchedule));
+		if(id) {
+			// AJAX DELETE
+			$.ajax({
+				url: '/event/' + id,
+				method: 'DELETE',
+				contentType: 'application/json',
+				success: function(result) {
+					// handle success
+
+					// Remove event object
+					delete mSchedule[eventKey];
+				},
+				error: function(request,msg,error) {
+					// handle failure
+				}
+			});
+		}
 	}
 
 }// end app

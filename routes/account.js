@@ -4,19 +4,6 @@ if (process.env.NODE_ENV !== 'production') {
 
 const express = require('express');
 const router = express.Router();
-var session = require('express-session');
-
-// set up sessions
-router.use(session({
-	secret: 'my-super-secret-secret!',//Need to change and move to env
-	resave: false,
-	saveUninitialized: true
-}))
-
-router.use(express.json() ); // to support JSON-encoded bodies
-router.use(express.urlencoded({ extended: true })); // to support URL-encoded bodies
-
-router.use(logRequest);
 
 // Setup our routes
 router.get('/login', (req, res) => res.render('pages/login'));
@@ -25,7 +12,6 @@ router.post('/logout', handleLogout);
 router.get('/getServerTime', verifyLogin, getServerTime);
 
 module.exports = router;
-
 
 // Support Funtions
 
@@ -76,11 +62,4 @@ function verifyLogin(request, response, next) {
 		var result = {success:false, message: "Access Denied"};
 		response.status(401).json(result);
 	}
-}
-
-// Middleware function simply logs the current request to the server
-function logRequest(request, response, next) {
-	console.log("Received a request for: " + request.url);
-	// call next() to allow the next parts of the pipeline to function
-	next();
 }
