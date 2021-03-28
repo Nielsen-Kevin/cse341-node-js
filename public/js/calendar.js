@@ -459,7 +459,7 @@ function startCalendar() {
 		let day = mSchedule[eventKey].day;
 		let month = mSchedule[eventKey].month;
 		let year = mSchedule[eventKey].year;
-		let time = (mSchedule[eventKey].time) ? mSchedule[eventKey].time : '00:00:00';
+		let time = (mSchedule[eventKey].time) ? mSchedule[eventKey].time + ':00' : '00:00:00';
 
 		return params = {
 			name: mSchedule[eventKey].name,

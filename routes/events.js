@@ -100,7 +100,7 @@ router.put('/:id', function(req, res) {
 		if (err) {
 			return console.error('error running query', err);
 		}
-		res.json({'success': true})
+		res.json(JSON.stringify(result.rows))
 	})
 });
 //delete one event
