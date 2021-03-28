@@ -95,7 +95,7 @@ router.put('/:id', function(req, res) {
 	const sql = 'UPDATE project02.event SET event_name = $2, event_date = $3, event_color = $4  WHERE event_id = $1::int';
 	var params = [req.params.id, req.body.name, req.body.date, req.body.color];
 	
-	pool.query(sql, id, function(err, result) {
+	pool.query(sql, params, function(err, result) {
 		// If an error occurred...
 		if (err) {
 			return console.error('error running query', err);

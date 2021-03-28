@@ -434,7 +434,6 @@ function startCalendar() {
 				endLoading();
 				
 				let events = JSON.parse(this.responseText);
-				console.log(events);
 
 				for(let k in events) {
 					let key = 'e' + eventCount;
