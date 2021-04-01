@@ -8,7 +8,7 @@ const connectionString = process.env.DATABASE_URL;
 const pool = new Pool({
 	connectionString: connectionString,
 	ssl: {
-		rejectUnauthorized: false,
+		rejectUnauthorized: false
 	}
 });
 var express = require('express');
@@ -24,15 +24,13 @@ router.get('/', function(req, res) {
 		if (err) {
 			return console.error('error running query', err);
 		}
-		res.json(JSON.stringify(result.rows))
+		res.json(result.rows)
 		//res.send(result);
 	})
 });
 
 router.get('/:year/:month', function(req, res) {
-	console.log("Getting events....")
-	year = req.params.year;
-	month = req.params.month;
+	console.log("Getting events by month....")
 
 	//const sql = "SELECT * FROM project02.event WHERE YEAR(event_date) = $1 AND MONTH(event_date) = $2";
 	const sql = `SELECT 
@@ -42,7 +40,7 @@ router.get('/:year/:month', function(req, res) {
 		event_color AS color, 
 		CONCAT(date_part('hour', event_date), ':', date_part('minute', event_date)) AS time 
 		FROM project02.event WHERE date_part('year', event_date) = $1 AND date_part('month', event_date) = $2`;
-	const params = [year, month];
+	const params = [req.params.year, req.params.month];
 
 	pool.query(sql, params, function(err, result) {
 		// If an error occurred...
@@ -69,14 +67,14 @@ router.post('/', function(req, res) {
 
 		let response = {
 			'success': true,
-			'id': result.rows['event_id']
+			'id': result.rows[0]['event_id']
 		}
 		res.json(response);
 	})
 });
 
 //get one event
-router.get('/:id', function(req, res) {
+/* router.get('/:id', function(req, res) {
 	console.log("Getting event....")
 	const sql = "SELECT * FROM project02.event WHERE event_id = $1::int";
 	const params = [req.params.id];
@@ -86,34 +84,43 @@ router.get('/:id', function(req, res) {
 		if (err) {
 			return console.error('error running query', err);
 		}
-		res.json(JSON.stringify(result.rows))
+		res.json(result.rows)
 	})
-});
+}); */
 // update event
 router.put('/:id', function(req, res) {
 	console.log("Updating event....")
-	const sql = 'UPDATE project02.event SET event_name = $2, event_date = $3, event_color = $4 WHERE event_id = $1::int';
-	var params = [req.params.id, req.body.name, req.body.date, req.body.color];
+	const sql = 'UPDATE project02.event SET event_name = $2, event_date = $3, event_color = $4 WHERE event_id = $1::int returning event_id';
+	const params = [req.params.id, req.body.name, req.body.date, req.body.color];
 	
-	pool.query(sql, params, function(err, result) {
+	 pool.query(sql, params, function(err, result) {
 		// If an error occurred...
 		if (err) {
 			return console.error('error running query', err);
 		}
-		res.json(JSON.stringify(result.rows))
-	})
+		let response = {
+			'success': true,
+			'id': result.rows[0]['event_id']
+		}
+		res.json(response);
+		return console.error(response);
+	}) 
 });
 //delete one event
 router.delete('/:id', function(req, res) {
 	console.log("Deleting events....")
-	const sql = 'DELETE FROM project02.event WHERE event_id = $1::int';
+	const sql = 'DELETE FROM project02.event WHERE event_id = $1::int returning event_id';
 
 	pool.query(sql, [req.params.id], function(err, result) {
 		// If an error occurred...
 		if (err) {
 			return console.error('error running query', err);
 		}
-		res.json(JSON.stringify(result.rows))
+		let response = {
+			'success': true,
+			'id': result.rows[0]['event_id']
+		}
+		res.json(response)
 	})
 });
 

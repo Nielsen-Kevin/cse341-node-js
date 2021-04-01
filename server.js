@@ -20,6 +20,7 @@ express()
 	.use(express.static(path.join(__dirname, 'public')))// Set safe folder for static files
 	.set('views', path.join(__dirname, 'views'))// Set views to path
 	.set('view engine', 'ejs')// Set the view engine to ejs
+	.use(logger) //Log request urls
 
 	// set up sessions
 	.use(session({
@@ -59,6 +60,10 @@ express()
 	.listen(PORT, () => console.log(`Listening on ${ PORT }`));
 
 	// Support Funtions
+function logger(req, res, next) {
+	console.log(`Received a ${req.method} request for: ${req.url}`);
+	next()
+}
 
 function testSession(req, res) {
 	if (req.session.user) {

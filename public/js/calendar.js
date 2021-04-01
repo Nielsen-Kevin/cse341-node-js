@@ -83,7 +83,7 @@ function startCalendar() {
 	}
 
 	// Instantiation with Inheritance Properties and Methods
-	var DateObject = function(key, type, name, day, month, year, time=false, color=false) {
+	var DateObject = function(key, type, name, day, month, year, time=false, color=false, recordId=false) {
 		this.type = type;
 		this.name = name;
 		this.color = color;
@@ -91,7 +91,7 @@ function startCalendar() {
 		this.month = month;
 		this.year = year;
 		this.time = time;
-		this.recordId;
+		this.recordId = recordId;
 		// Methods
 		this.id = function() {
 			return this.year + '_' + ('0' + this.month).slice(-2) + '_' + ('0' + this.day).slice(-2);
@@ -127,10 +127,10 @@ function startCalendar() {
 		return key;
 	}
 
-	var NewEvent = function(name, month, day, year, time, color) {
+	var NewEvent = function(name, month, day, year, time, color, recordId) {
 		if(name) {
 			let key = 'e' + eventCount;
-			let record = new DateObject(key, 'event', name, day, month, year, time, color);
+			let record = new DateObject(key, 'event', name, day, month, year, time, color, recordId);
 			if(numYear == year && numMonth == month) {
 				mSchedule[key] = record;
 				mSchedule[key].updateDay();
@@ -142,7 +142,8 @@ function startCalendar() {
 	}
 
 	var UpdateEvent = function(key, name, month, day, year, time, color) {
-		let record = new DateObject(key, 'event', name, day, month, year, time, color);
+		let recordId = mSchedule[key].recordId;
+		let record = new DateObject(key, 'event', name, day, month, year, time, color, recordId);
 		if(numYear == year && numMonth == month) {
 			mSchedule[key] = record;
 			mSchedule[key].updateDay();
@@ -437,10 +438,9 @@ function startCalendar() {
 
 				for(let k in events) {
 					let key = 'e' + eventCount;
-					let record = new DateObject(key, 'event', events[k].name, parseInt(events[k].day, 10), numMonth, numYear, events[k].time, events[k].color);
+					let record = new DateObject(key, 'event', events[k].name, parseInt(events[k].day, 10), numMonth, numYear, events[k].time, events[k].color, events[k].id);
 					mSchedule[key] = record;
 					mSchedule[key].updateDay();
-					mSchedule[key].recordId = events[k].id;
 					autoIncrement();
 				}
 			}
@@ -478,6 +478,7 @@ function startCalendar() {
 			if (result && result.success) {
 				// handle success
 				console.log(result);
+				console.log(result.id);
 				mSchedule[eventKey].recordId = result.id;
 			} else {
 				// handle failure
@@ -497,13 +498,13 @@ function startCalendar() {
 		let currentDataKey = 'e' + numYear + ('0' + numMonth).slice(-2);
 		let id = mSchedule[eventKey].recordId;
 		let params = setupParams(eventKey);
+		console.log('Updating id:', id);
 
 		if(id) {
 			// AJAX UPDATE
 			$.ajax({
 				url: '/event/' + id,
 				method: 'PUT',
-				contentType: 'application/json',
 				data: params,
 				success: function(result) {
 					// handle success
@@ -511,8 +512,11 @@ function startCalendar() {
 				},
 				error: function(request,msg,error) {
 					// handle failure
+					console.log('ajax error:', error);
 				}
 			});
+		} else {
+			console.log('error no id');
 		}
 		
 		if(currentDataKey != monthKey) {
@@ -526,6 +530,7 @@ function startCalendar() {
 	// Remove Event
 	function deleteEvent(eventKey) {
 		let id = mSchedule[eventKey].recordId;
+		console.log('Deleting id:', id);
 
 		if(id) {
 			// AJAX DELETE
