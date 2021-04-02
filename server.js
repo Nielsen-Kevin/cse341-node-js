@@ -20,7 +20,7 @@ express()
 	.use(express.static(path.join(__dirname, 'public')))// Set safe folder for static files
 	.set('views', path.join(__dirname, 'views'))// Set views to path
 	.set('view engine', 'ejs')// Set the view engine to ejs
-	.use(logger) //Log request urls
+	.use(logger) //Log request method and urls
 
 	// set up sessions
 	.use(session({

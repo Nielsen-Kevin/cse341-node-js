@@ -127,23 +127,25 @@ function startCalendar() {
 		return key;
 	}
 
-	var NewEvent = function(name, month, day, year, time, color, recordId) {
+	var NewEvent = function(name, month, day, year, time, color) {
 		if(name) {
 			let key = 'e' + eventCount;
-			let record = new DateObject(key, 'event', name, day, month, year, time, color, recordId);
+			let record = new DateObject(key, 'event', name, day, month, year, time, color);
 			if(numYear == year && numMonth == month) {
 				mSchedule[key] = record;
 				mSchedule[key].updateDay();
 			}
 			autoIncrement();
 			// Auto save
-			saveRecord('e' + year + ('0' + month).slice(-2), key);
+			let params = setupParams(name, month, day, year, time, color);
+			saveRecord('e' + year + ('0' + month).slice(-2), key, params);
 		}
 	}
 
 	var UpdateEvent = function(key, name, month, day, year, time, color) {
 		let recordId = mSchedule[key].recordId;
 		let record = new DateObject(key, 'event', name, day, month, year, time, color, recordId);
+
 		if(numYear == year && numMonth == month) {
 			mSchedule[key] = record;
 			mSchedule[key].updateDay();
@@ -153,7 +155,8 @@ function startCalendar() {
 			obj.parentNode.removeChild(obj);
 		}
 		// Auto save
-		updateRecord('e' + year + ('0' + month).slice(-2), key);
+		let params = setupParams(name, month, day, year, time, color);
+		updateRecord('e' + year + ('0' + month).slice(-2), key, params);
 	}
 
 	// My Modal
@@ -455,33 +458,31 @@ function startCalendar() {
 		xhttp.send();
 	}
 
-	function setupParams(eventKey) {
-		let day = mSchedule[eventKey].day;
-		let month = mSchedule[eventKey].month;
-		let year = mSchedule[eventKey].year;
-		let time = (mSchedule[eventKey].time) ? mSchedule[eventKey].time + ':00' : '00:00:00';
-
+	function setupParams(name, month, day, year, time, color) {
+		day = ('0' + day).slice(-2);
+		month = ('0' + month).slice(-2);
+		year = year;
+		time = (time) ? time + ':00' : '00:00:00';
 		return params = {
-			name: mSchedule[eventKey].name,
+			name: name,
 			date: `${year}-${month}-${day} ${time}`,
-			color: mSchedule[eventKey].color
+			color: color
 		}
 	}
 
 	// Save records every time there is a change
-	function saveRecord(monthKey, eventKey) {
+	function saveRecord(monthKey, eventKey, params) {
 		let currentDataKey = 'e' + numYear + ('0' + numMonth).slice(-2);
-		let params = setupParams(eventKey);
 
 		// AJAX SAVE
 		$.post("/event", params, function(result) {
 			if (result && result.success) {
 				// handle success
 				console.log(result);
-				console.log(result.id);
 				mSchedule[eventKey].recordId = result.id;
 			} else {
 				// handle failure
+				console.log('ajax error:', error);
 			}
 		});
 
@@ -494,10 +495,9 @@ function startCalendar() {
 	}
 
 	// Update records every time there is a change
-	function updateRecord(monthKey, eventKey) {
+	function updateRecord(monthKey, eventKey, params) {
 		let currentDataKey = 'e' + numYear + ('0' + numMonth).slice(-2);
 		let id = mSchedule[eventKey].recordId;
-		let params = setupParams(eventKey);
 		console.log('Updating id:', id);
 
 		if(id) {
@@ -518,7 +518,7 @@ function startCalendar() {
 		} else {
 			console.log('error no id');
 		}
-		
+
 		if(currentDataKey != monthKey) {
 			// Moving to new month remove
 			if(mSchedule[eventKey]) {
@@ -540,12 +540,13 @@ function startCalendar() {
 				contentType: 'application/json',
 				success: function(result) {
 					// handle success
-
+					console.log(result);
 					// Remove event object
 					delete mSchedule[eventKey];
 				},
 				error: function(request,msg,error) {
 					// handle failure
+					console.log('ajax error:', error);
 				}
 			});
 		}

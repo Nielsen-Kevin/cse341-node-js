@@ -38,7 +38,7 @@ router.get('/:year/:month', function(req, res) {
 		event_name AS name, 
 		date_part('day', event_date) AS day, 
 		event_color AS color, 
-		CONCAT(date_part('hour', event_date), ':', date_part('minute', event_date)) AS time 
+		to_char(event_date, 'HH24:MI') AS time 
 		FROM project02.event WHERE date_part('year', event_date) = $1 AND date_part('month', event_date) = $2`;
 	const params = [req.params.year, req.params.month];
 
@@ -73,25 +73,12 @@ router.post('/', function(req, res) {
 	})
 });
 
-//get one event
-/* router.get('/:id', function(req, res) {
-	console.log("Getting event....")
-	const sql = "SELECT * FROM project02.event WHERE event_id = $1::int";
-	const params = [req.params.id];
-
-	pool.query(sql, params, function(err, result) {
-		// If an error occurred...
-		if (err) {
-			return console.error('error running query', err);
-		}
-		res.json(result.rows)
-	})
-}); */
 // update event
 router.put('/:id', function(req, res) {
 	console.log("Updating event....")
-	const sql = 'UPDATE project02.event SET event_name = $2, event_date = $3, event_color = $4 WHERE event_id = $1::int returning event_id';
+	const sql = 'UPDATE project02.event SET event_name = $2, event_date = $3, event_color = $4 WHERE event_id = $1::int';
 	const params = [req.params.id, req.body.name, req.body.date, req.body.color];
+	console.log(params);
 	
 	 pool.query(sql, params, function(err, result) {
 		// If an error occurred...
@@ -100,10 +87,10 @@ router.put('/:id', function(req, res) {
 		}
 		let response = {
 			'success': true,
-			'id': result.rows[0]['event_id']
+			//'id': result.rows[0]['event_id']
 		}
+		//console.error(result);
 		res.json(response);
-		return console.error(response);
 	}) 
 });
 //delete one event
