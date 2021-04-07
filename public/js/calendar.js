@@ -176,7 +176,6 @@ function startCalendar() {
 					}
 				}
 			}
-			alert('updateDay');
 			mSchedule[key].updateDay();
 
 			obj = document.getElementById(key);
