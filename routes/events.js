@@ -52,7 +52,7 @@ router.get('/:year/:month', function(req, res) {
 });
 
 //post event
-router.post('/', function(req, res) {
+router.post('/', verifyLogin, function(req, res) {
 	console.log("Saving event....")
 
 	const sql = 'INSERT INTO project02.event(event_name, event_date, event_color) VALUES($1, $2, $3) returning event_id';
@@ -74,7 +74,7 @@ router.post('/', function(req, res) {
 });
 
 // update event
-router.put('/:id', function(req, res) {
+router.put('/:id', verifyLogin, function(req, res) {
 	console.log("Updating event....")
 	const sql = 'UPDATE project02.event SET event_name = $2, event_date = $3, event_color = $4 WHERE event_id = $1::int';
 	const params = [req.params.id, req.body.name, req.body.date, req.body.color];
@@ -94,7 +94,7 @@ router.put('/:id', function(req, res) {
 	}) 
 });
 //delete one event
-router.delete('/:id', function(req, res) {
+router.delete('/:id', verifyLogin, function(req, res) {
 	console.log("Deleting events....")
 	const sql = 'DELETE FROM project02.event WHERE event_id = $1::int returning event_id';
 
@@ -110,5 +110,23 @@ router.delete('/:id', function(req, res) {
 		res.json(response)
 	})
 });
+
+// Check access and return success
+router.get('/access', verifyLogin, function(req, res) {
+	var result = {success: true};
+	res.json(result); 
+});
+
+// Middleware function to use with any request - check user is logged in
+function verifyLogin(req, res, next) {
+	if (req.session.user) {
+		// They are logged in pass along to the next function
+		next();
+	} else {
+		// They are not logged in Send back an unauthorized status
+		var result = {success:false, message: "Access Denied"};
+		res.json(result);
+	}
+}
 
 module.exports = router;

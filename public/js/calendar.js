@@ -32,7 +32,10 @@ function startCalendar() {
 	var holidayCount = 0;
 
 	var modal;
+	var loadModal;
 	var tasksLoading = 0;
+
+	var loglock = loginRequired();
 
 	function buildCalendarArray(year, month) {
 	
@@ -132,13 +135,24 @@ function startCalendar() {
 			let key = 'e' + eventCount;
 			let record = new DateObject(key, 'event', name, day, month, year, time, color);
 			if(numYear == year && numMonth == month) {
+				//Attach object
 				mSchedule[key] = record;
+				// Auto Save
+				let params = setupParams(name, month, day, year, time, color);
+				if( saveRecord(key, params) ) {
+
+					let currentDataKey = 'e' + numYear + ('0' + numMonth).slice(-2);
+					let monthKey = 'e' + year + ('0' + month).slice(-2);
+					if(currentDataKey != monthKey) {
+						// Moving to new month remove
+						if(mSchedule[key]) {
+							delete mSchedule[key];
+						}
+					}
+				}
 				mSchedule[key].updateDay();
+				autoIncrement();
 			}
-			autoIncrement();
-			// Auto save
-			let params = setupParams(name, month, day, year, time, color);
-			saveRecord('e' + year + ('0' + month).slice(-2), key, params);
 		}
 	}
 
@@ -147,16 +161,29 @@ function startCalendar() {
 		let record = new DateObject(key, 'event', name, day, month, year, time, color, recordId);
 
 		if(numYear == year && numMonth == month) {
+			//Attach object
 			mSchedule[key] = record;
+			// Auto save
+			let params = setupParams(name, month, day, year, time, color);
+			if( updateRecord(key, params) ) {
+
+				let currentDataKey = 'e' + numYear + ('0' + numMonth).slice(-2);
+				let monthKey = 'e' + year + ('0' + month).slice(-2);
+				if(currentDataKey != monthKey) {
+					// Moving to new month remove
+					if(mSchedule[eventKey]) {
+						delete mSchedule[eventKey];
+					}
+				}
+			}
+			alert('updateDay');
 			mSchedule[key].updateDay();
+
+			obj = document.getElementById(key);
+			if (obj.parentNode) {
+				obj.parentNode.removeChild(obj);
+			}
 		}
-		obj = document.getElementById(key);
-		if (obj.parentNode) {
-			obj.parentNode.removeChild(obj);
-		}
-		// Auto save
-		let params = setupParams(name, month, day, year, time, color);
-		updateRecord('e' + year + ('0' + month).slice(-2), key, params);
 	}
 
 	// My Modal
@@ -165,26 +192,24 @@ function startCalendar() {
 		modal = document.createElement('div');
 		modal.setAttribute('id', 'modal');
 
-		html = '<div class="modal-content">';
-		html += '	<span class="close">&times;</span>';
-		html += '	<div class="title">' + title + '</div>';
-		html += '	<input type="hidden" name="id" value="">';
-		html += '	<p><label for="event">Event</label> <input type="text" name="event"></p>';
-		html += '	<p><label for="date">Date</label> <input type="date" name="date"></p>';
-		html += '	<p><label for="time">Time</label> <input type="time" name="time"></p>';
-		html += '	<p><label for="color">Color</label> <input type="color" name="color" list="colorlist"></p>';
-		html += '	<datalist id="colorlist">';
-		for(let c of ['#ffff80','#80ff80','#80ffff','#b8a9c9','#ff8080','#ffcc5c','#96ceb4','#d9ad7c','#b7d7e8','#c0c0c0']) {
-			html += '<option value="' + c + '"></option>';
-		}
-		html += '	</datalist>';
-		html += '	<p><input type="button" name="delete" value="Delete" class="button"> <input type="button" name="save" value="Save" class="button"></p>';
-		html += '	<div id="events"></div>';
-		html += '</div>';
+		html = `<div class="modal-content">
+			<span class="close">&times;</span>
+			<div class="title">${title}</div>
+			<input type="hidden" name="id" value="">
+			<p><label for="event">Event</label> <input type="text" name="event"></p>
+			<p><label for="date">Date</label> <input type="date" name="date"></p>
+			<p><label for="time">Time</label> <input type="time" name="time"></p>
+			<p><label for="color">Color</label> <input type="color" name="color" list="colorlist"></p>
+			<datalist id="colorlist">`;
+			for(let c of ['#ffff80','#80ff80','#80ffff','#b8a9c9','#ff8080','#ffcc5c','#96ceb4','#d9ad7c','#b7d7e8','#c0c0c0']) {
+				html += `<option value="${c}"></option>`;
+			}
+			html += `</datalist>
+			<p><input type="button" name="delete" value="Delete" class="button"> <input type="button" name="save" value="Save" class="button"></p>
+			<div id="events"></div>
+		</div>`;
 
 		modal.innerHTML = html;
-
-		//document.getElementById('calendar').appendChild(modal);
 		document.body.appendChild(modal);
 
 		// click on x close the modal
@@ -258,8 +283,9 @@ function startCalendar() {
 		// Delete button
 		document.getElementsByName('delete')[0].onclick = function() {
 			// Delete data
-			document.getElementById(id).remove();
-			deleteEvent(id);
+			if(deleteEvent(id)) {
+				document.getElementById(id).remove();
+			}
 			modal.end();
 		};
 	}
@@ -307,10 +333,10 @@ function startCalendar() {
 	function addLoading() {
 		if(tasksLoading == 0) {
 			// Create loading modal
-			modal = document.createElement('div');
-			modal.setAttribute('id', 'modal');
-			modal.innerHTML = '<div id="loader">Loading...</div>';
-			document.body.appendChild(modal);
+			loadModal = document.createElement('div');
+			loadModal.setAttribute('id', 'loading');
+			loadModal.innerHTML = '<div id="loader">Loading...</div>';
+			document.body.appendChild(loadModal);
 		}
 		tasksLoading += 1;
 	}
@@ -318,7 +344,7 @@ function startCalendar() {
 	function endLoading() {
 		tasksLoading -= 1;
 		if(tasksLoading == 0) {
-			modal.remove();
+			loadModal.remove();
 		}
 	}
 
@@ -425,7 +451,7 @@ function startCalendar() {
 
 	function autoIncrement() {
 		eventCount++;
-		console.log('eventCount', eventCount);
+		//console.log('eventCount', eventCount);
 	}
 	getMonthRecords();
 
@@ -471,34 +497,27 @@ function startCalendar() {
 	}
 
 	// Save records every time there is a change
-	function saveRecord(monthKey, eventKey, params) {
-		let currentDataKey = 'e' + numYear + ('0' + numMonth).slice(-2);
-
+	function saveRecord(eventKey, params) {
 		// AJAX SAVE
 		$.post("/event", params, function(result) {
 			if (result && result.success) {
 				// handle success
 				console.log(result);
 				mSchedule[eventKey].recordId = result.id;
+				return true;
 			} else {
 				// handle failure
 				console.log('ajax error:', error);
+				return false;
 			}
 		});
-
-		if(currentDataKey != monthKey) {
-			// Moving to new month remove
-			if(mSchedule[eventKey]) {
-				delete mSchedule[eventKey];
-			}
-		}
 	}
 
 	// Update records every time there is a change
-	function updateRecord(monthKey, eventKey, params) {
-		let currentDataKey = 'e' + numYear + ('0' + numMonth).slice(-2);
+	function updateRecord(eventKey, params) {
 		let id = mSchedule[eventKey].recordId;
 		console.log('Updating id:', id);
+		let status = false;
 
 		if(id) {
 			// AJAX UPDATE
@@ -508,7 +527,10 @@ function startCalendar() {
 				data: params,
 				success: function(result) {
 					// handle success
-					console.log(result);
+					if (result && result.success) {
+						console.log(result);
+						status = true;
+					}
 				},
 				error: function(request,msg,error) {
 					// handle failure
@@ -518,19 +540,14 @@ function startCalendar() {
 		} else {
 			console.log('error no id');
 		}
-
-		if(currentDataKey != monthKey) {
-			// Moving to new month remove
-			if(mSchedule[eventKey]) {
-				delete mSchedule[eventKey];
-			}
-		}
+		return status;
 	}
 
 	// Remove Event
 	function deleteEvent(eventKey) {
 		let id = mSchedule[eventKey].recordId;
 		console.log('Deleting id:', id);
+		let status = false;
 
 		if(id) {
 			// AJAX DELETE
@@ -540,9 +557,11 @@ function startCalendar() {
 				contentType: 'application/json',
 				success: function(result) {
 					// handle success
-					console.log(result);
-					// Remove event object
-					delete mSchedule[eventKey];
+					if (result && result.success) {
+						// Remove event object
+						delete mSchedule[eventKey];
+						status = true;
+					}
 				},
 				error: function(request,msg,error) {
 					// handle failure
@@ -550,6 +569,87 @@ function startCalendar() {
 				}
 			});
 		}
+		return status;
+	}
+
+///////////////////////////////////////////////////////////////////////
+	
+	// Check server logged in
+	function loginRequired() {
+		$.get("/event/access", function(result) {
+			if (result && result.success) {
+				// handle success
+				console.log(result);
+				return true;
+			} else {
+				// Login modal
+				loginForm();
+				return false;
+			}
+		});
+	}
+
+	// Login Modal Form
+	function loginForm() {
+		// Create modal
+		modal = document.createElement('div');
+		modal.setAttribute('id', 'modal');
+
+		html = `<div class="modal-content">
+			<div class="title">Login</div>
+			<div class="container">
+				<div class="row">
+					<div class="col-sm-6">
+						<label for="username">Username</label>
+						<input type="text" id="username" placeholder="username" class="form-control"><br>
+						<label for="password">Password</label>
+						<input type="password" id="password" placeholder="password" class="form-control"><br>
+						<button class="btn btn-primary" id="login">Log in</button>
+						<br>
+						<div id="status"></div>
+					</div>
+				</div>
+			</div>
+		</div>`;
+
+		modal.innerHTML = html;
+		document.body.appendChild(modal);
+
+		document.getElementById('login').onclick = function() {
+			login();
+		}
+
+		//Start fade-in grow
+		modal.classList.add('fadeGrow');
+		setTimeout(function() {
+			modal.classList.remove('fadeGrow');
+		}, 1);
+
+		modal.end = function() {
+			modal.classList.add('fadeGrow');
+			setTimeout(function() {
+				modal.style.display = 'none';
+				modal.remove();
+			}, 500);
+		}
+	}
+
+	function login() {
+		var params = {
+			username: $("#username").val(),
+			password: $("#password").val()
+		};
+	
+		$.post("/account/login", params, function(result) {
+			if (result && result.success) {
+				$("#status").text("Successfully logged in.");
+				modal.end();
+				return true;
+			} else {
+				$("#status").text("Error logging in.");
+				return false;
+			}
+		});
 	}
 
 }// end app
